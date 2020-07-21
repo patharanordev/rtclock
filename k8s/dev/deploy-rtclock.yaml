@@ -1,0 +1,116 @@
+# kind: Pod
+# apiVersion: v1
+# metadata:
+#   name: rtclock-server
+#   labels:
+#     app: rtclock-server
+# spec:
+#   containers:
+#   - name: rtclock-server
+#     image: patharagls/rtclock:0.2.1-server
+#     ports:
+#     - containerPort: 3000
+# ---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rtclock-server
+spec:
+  selector:
+    matchLabels:
+      run: rtclock-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: rtclock-server
+    spec:
+      containers:
+      - name: rtclock-server
+        image: patharagls/rtclock:0.2.1-server
+        ports:
+        - containerPort: 3000
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+          requests:
+            cpu: "200m"
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: rtclock-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: rtclock-server
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 50
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: rtclock-server
+  labels:
+    run: rtclock-server
+spec:
+  selector:
+    run: rtclock-server
+  ports:
+  - protocol: TCP
+    port: 3000
+---
+# kind: Pod
+# apiVersion: v1
+# metadata:
+#   name: rtclock-client
+#   labels:
+#     app: rtclock-client
+# spec:
+#   containers:
+#   - name: rtclock-client
+#     image: patharagls/rtclock:0.2.1-client
+#     env:
+#     - name: WS_SERVER
+#       value: "http://rtclock-server"
+#     ports:
+#     - containerPort: 3000
+# ---
+# kind: Service
+# apiVersion: v1
+# metadata:
+#   name: rtclock-client
+# spec:
+#   selector:
+#     app: rtclock-client
+#   ports:
+#   - protocol: TCP
+#     port: 3000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: rtclock-ingress
+  # annotations:
+  #   # kubernetes.io/ingress.global-static-ip-name: static-ip
+  #   nginx.org/websocket-services: "rtclock-server-service"
+  #   nginx.ingress.kubernetes.io/enable-cors: "true"
+  #   nginx.ingress.kubernetes.io/cors-allow-methods: "PUT, GET, POST, OPTIONS"
+  #   nginx.ingress.kubernetes.io/cors-allow-origin: "*" # https://admin.example.com
+  #   # nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /ws
+        backend:
+          serviceName: rtclock-server
+          servicePort: 3000
+      # - path: /client
+      #   backend:
+      #     serviceName: rtclock-client
+      #     servicePort: 3000
+---

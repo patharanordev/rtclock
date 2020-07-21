@@ -1,0 +1,1 @@
+docker build -t patharagls/rtclock:0.2.1-server .
