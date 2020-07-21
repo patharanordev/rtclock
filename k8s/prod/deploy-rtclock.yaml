@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: rtclock-server
-        image: harbor.bdms.co.th/hms_gateway/rtclock:0.2.1-server
+        image: your.registry.ip/rtclock:0.2.1-server
         ports:
         - containerPort: 3000
         resources:

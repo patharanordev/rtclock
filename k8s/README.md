@@ -9,7 +9,7 @@ You can test any service in localhost or development environment with [kind@k8s]
 ## Requirement
 
  - High performance instance for cluster node and worker nodes
- - Any container/Docker image that you use, you **MUST** upload to internal Harbor registry first via `harbor.bdms.co.th/hms_gateway`.
+ - Any container/Docker image that you use, you **MUST** upload to internal registry first via `your.registry.ip`.
  - Private usage ( you cannot access to public network )
  - Command : `kubectl`, `docker`
 
@@ -20,7 +20,7 @@ We using container image below:
  - yauritux/busybox-curl
  - patharagls/rtclock:0.2.1-server
 
-To convert image tag from original to `harbor.bdms.co.th/hms_gateway`, you can use command below:
+To convert image tag from original to `your.registry.ip`, you can use command below:
 
 ```bash
 # Example image tag : "patharagls/rtclock:0.2.1-server"
@@ -28,11 +28,11 @@ To convert image tag from original to `harbor.bdms.co.th/hms_gateway`, you can u
 # Pull the original image tag
 $ docker pull patharagls/rtclock:0.2.1-server
 
-# Convert tag original to internal Harbor tag
-$ docker tag patharagls/rtclock:0.2.1-server harbor.bdms.co.th/hms_gateway/rtclock:0.2.1-server
+# Convert tag original to internal registry tag
+$ docker tag patharagls/rtclock:0.2.1-server your.registry.ip/rtclock:0.2.1-server
 
-# Push it to internal Harbor
-$ docker push harbor.bdms.co.th/hms_gateway/rtclock:0.2.1-server
+# Push it to internal registry
+$ docker push your.registry.ip/rtclock:0.2.1-server
 ```
 
 The image ready to use now.
@@ -64,7 +64,7 @@ spec:
     spec:
       containers:
       - name: rtclock-server
-        image: harbor.bdms.co.th/hms_gateway/rtclock:0.2.1-server
+        image: your.registry.ip/rtclock:0.2.1-server
         ports:
         - containerPort: 3000
         resources:
@@ -154,7 +154,7 @@ It hard to increase load directly to `rtclock` but you can deploy `busybox` imag
 I called the service is `load-generator`. It will be removed after exited.
 
 ```
-kubectl run -it --rm load-generator --image=harbor.bdms.co.th/hms_gateway/busybox-curl:latest /bin/sh
+kubectl run -it --rm load-generator --image=your.registry.ip/busybox-curl:latest /bin/sh
 
 # then hit enter 1 times or waiting busybox started
 ```
@@ -183,10 +183,6 @@ But in case you set amount of replica set, it will not scale over the limit. Alt
 After stopped, please waiting for 
  - 1 minute for decreasing CPU usage
  - 3-5 minutes for autoscaling down the replica set
-
-### Showcase
-
-https://bdmsgroup.sharepoint.com/sites/GLSHMSGateway/Shared%20Documents/General/Temp/test-horizontal-pod-autoscaling.mov
 
 ### Issues
 
